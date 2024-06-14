@@ -1,0 +1,1699 @@
+<!DOCTYPE html>  
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Учёт рабочего времени</title>
+  <link rel="stylesheet" href="main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/3.1.4/css/datepicker.min.css">
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/air-datepicker/3.1.4/js/datepicker.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/air-datepicker@2.2.3/dist/js/i18n/datepicker.ru.js"></script>
+  <style>
+    /* Воскобойникова С, Шевченко П */
+
+    #main-frame {   /* Главный экран */
+      position: relative;
+      width: 1920px;
+      height: 2300px;
+      background: linear-gradient(0.00deg, rgb(193, 188, 223) 0.374%,rgb(223, 223, 223) 99.625%);
+      margin-left: -8px;
+    }
+
+    #main-frame .frame1 {   /* Фрейм с учетом рабочего времени */
+      position: absolute;
+      width: 619px;
+      height: 663px;
+      left: 850px;
+      top: 200px;
+      border-radius: 70px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: rgb(255, 255, 255);
+    }
+
+    #main-frame .frame2 {   /* Фрейм с выбором даты */
+      position: absolute;
+      width: 1045px;
+      height: 630px;
+      left: 426px;
+      right: 449px;
+      top: 1193px;
+      bottom: 164px;
+      border-radius: 70px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: rgb(255, 255, 255);
+      transition: width 0.5s ease-in-out;
+    }
+
+    #main-frame .frame2.expanded { /* Класс для увеличения */
+      height: 900px;
+    }
+    #main-frame .frame2 .hidden {  /* Скрываем div с результатами по умолчанию */
+      display: none; 
+    }
+
+    #main-frame .menu {  /* Меню */
+      position: absolute;
+      width: 1920px;
+      height: 75px;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 2745px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+      background: rgb(255, 255, 255);
+      display: flex; 
+      align-items: center;
+    }
+    
+    #main-frame .menu .exit {   /* Выйти */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 70px;
+      width: 75px;
+      height: auto;
+      color: rgb(79, 63, 175);
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 27px;
+      letter-spacing: 0;
+      text-align: left;
+      background-color: #fff;
+      padding: 5px 10px;
+      border-radius: 4px;
+      background: rgb(200, 194, 240);
+      margin-top: 13px;
+    }
+
+  
+    #main-frame .menu .about {   /* О нас */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 700px;
+      width: 90px;
+      height: auto;
+      color: rgb(79, 63, 175);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 27px;
+      letter-spacing: 0%;
+      text-align: left;
+      border-radius: 4px;
+      background: rgb(200, 194, 240);
+      margin-top: 22px;
+    }
+
+    #main-frame .menu .time {  /* Учёт времени */
+      margin-left: 55px;
+      width: 180px;
+      height: auto;
+      color: rgb(79, 63, 175);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 27px;
+      letter-spacing: 0%;
+      text-align: left;
+      border-radius: 4px;
+      background: rgb(200, 194, 240);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 22px;
+    }
+
+    #main-frame .menu .contacts {  /* Контакты */
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-left: 55px;
+      width: 130px;
+      height: auto;
+      color: rgb(79, 63, 175);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 27px;
+      letter-spacing: 0%;
+      border-radius: 4px;
+      background: rgb(200, 194, 240);
+      margin-top: 22px;
+    }
+
+    .menu img {  /* Логотип */
+      position: absolute;
+      width: 180px;
+      height: 40px;
+      left: 1677px;
+      right: 96px;
+      top: 24px;
+      bottom: 0;
+    }
+
+    .ellipse {   /* Круг */
+      position: absolute;
+      width: 330px;
+      height: 330px;
+      left: 580px;
+      top: 380px;
+      transform: translate(-50%, -50%); 
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(180.00deg, rgb(54, 39, 152), rgb(109, 94, 204) 20%, rgb(143, 130, 224) 43%, rgb(255, 255, 255) 100%);
+      border-radius: 50%; 
+    }
+
+    .name {   /* Пользователь */
+      position: absolute;
+      width: 50px;
+      height: 48px;
+      left: 563px;
+      right: 1307px;
+      top: 558px;
+      bottom: 2222px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 36px;
+      font-weight: 400;
+      line-height: 48px;
+      letter-spacing: 0%;
+      text-align: left;
+    }
+
+    #main-frame .frame1 .date-button {  /* Дата */
+      position: absolute;
+      width: 212px;
+      height: 66px;
+      left: 204px;
+      right: 203px;
+      top: 50px;
+      bottom: 547px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+      transition: background-color 200ms ease-in-out;
+    }
+
+    #main-frame .frame1 .date-button:hover { /* Стили при наведении кнопки Дата*/
+      border-radius: 15px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+      background-color: smart animate;
+    }
+
+    #main-frame .frame2 .date-button1 {  /* Дата 1 фрейм 2*/
+      position: absolute;
+      width: 212px;
+      height: 66px;
+      left: 350px;
+      right: 203px;
+      top: 230px;
+      bottom: 547px;
+      border-radius: 15px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+      transition: background-color 200ms ease-in-out;
+    }
+
+    #main-frame .frame2 .date-button1:hover { /* Стили при наведении кнопки Дата 1 фрейм 2*/
+      border-radius: 15px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+      background-color: smart animate;
+    }
+
+    #main-frame .frame2 .date-button2 {  /* Дата 2 фрейм 2*/
+    position: absolute;
+    width: 212px;
+    height: 66px;
+    left: 700px;
+    right: 203px;
+    top: 230px;
+    bottom: 547px;
+    border-radius: 15px;
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+    transition: background-color 200ms ease-in-out;
+  }
+
+    #main-frame .frame2 .date-button2:hover { /* Стили при наведении кнопки Дата 2 фрейм 2*/
+      border-radius: 15px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+      background-color: smart animate;
+    }
+
+    #main-frame .frame2 .d {    /* до */
+      position: absolute;
+      width: 35px;
+      height: 43px;
+      left: 620px;
+      right: 363px;
+      top: 253px;
+      bottom: 334px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 43px;
+      letter-spacing: 0%;
+      text-align: left;
+    }
+
+    #main-frame .frame1 .save {  /* Сохранить1 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 138px;
+      right: 155px;
+      top: 521px;
+      bottom: 52px;
+      border-radius: 10px;
+      border: 1px solid #B3B3B3;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    #main-frame .frame1 .save:hover { /* Стили при наведении кнопки Сохранить*/
+      border-radius: 10px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(270.00deg, rgb(200, 194, 240) 100%);
+      background-color: #C8C2F0;
+    }
+
+    #main-frame .frame1 .save .save1 {  /* Сохранить2 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 0;
+      top: 0;
+    }
+
+    #main-frame .frame1 .save .save1 .save-text {  /* Сохранить3 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 0%;
+      right: 0%;
+      top: 0%;
+      bottom: 0%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      color: rgb(54, 39, 152);
+      font-family: Playfair Display;
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 53px;
+      letter-spacing: 0%;
+      text-align: center;
+      justify-content: center;
+    }
+
+    #main-frame .frame2 .save-2 {  /* Рассчитать1 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 358px;
+      right: 155px;
+      top: 450px;
+      bottom: 52px;
+      border-radius: 10px;
+      border: 1px solid #B3B3B3;
+      transition: background-color 0.3s ease;
+      cursor: pointer;
+    }
+
+    #main-frame .frame2 .save-2:hover { /* Стили при наведении кнопки Рассчитать*/
+      border-radius: 10px;
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      background: linear-gradient(270.00deg, rgb(200, 194, 240) 100%);
+      background-color: #C8C2F0;
+    }
+
+    #main-frame .frame2 .save-2 .save1-2 {  /* Рассчитать2 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 0;
+      top: 0;
+    }
+
+    #main-frame .frame2 .save-2 .save1-2 .save-text-2 {  /* Рассчитать3 */
+      position: absolute;
+      width: 326px;
+      height: 90px;
+      left: 0%;
+      right: 0%;
+      top: 0%;
+      bottom: 0%;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      color: rgb(54, 39, 152);
+      font-family: Playfair Display;
+      font-size: 40px;
+      font-weight: 400;
+      line-height: 53px;
+      letter-spacing: 0%;
+      text-align: center;
+      justify-content: center;
+    }
+
+    #main-frame .frame1 .time-input {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+      margin-left: 40px;
+    }
+
+    #main-frame .frame1 .time-input label {
+      margin-right: 10px;
+      margin-top: 12px;
+    }
+
+    #main-frame .frame1 .time-input input {
+      width: 80px;
+      padding: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    #main-frame .frame1 .text1,
+    #main-frame .frame1 .text2,
+    #main-frame .frame1 .text3,
+    #main-frame .frame1 .text4 {
+      display: inline-block;
+      width: 150px;
+    }
+
+    #main-frame .frame1 .time-input {
+      display: inline-flex;
+      margin-left: 5;
+    }
+
+    #main-frame .frame1 .text1 {       /* Начало рабочего дня */
+      position: relative;
+      width: 242px;
+      height: 32px;
+      margin-left: 52px;
+      margin-bottom: 25px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 32px;
+      letter-spacing: 0%;
+      text-align: left;
+      margin-top: 170px;
+    }
+
+    #main-frame .frame1 .text2 {   /* Конец рабочего дня */
+      position: relative;
+      width: 231px;
+      height: 32px;
+      margin-left: 52px;
+      margin-bottom: 60px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 32px;
+      letter-spacing: 0%;
+      text-align: left;
+      margin-right: 11px;
+    }
+
+    #main-frame .frame1 .text3 {    /* Начало перерыва */
+      position: relative;
+      width: 204px;
+      height: 32px;
+      margin-left: 52px;
+      margin-bottom: 25px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 32px;
+      letter-spacing: 0%;
+      text-align: left;
+      margin-right: 37px;
+    }
+
+    #main-frame .frame1 .text4 {   /* Конец перерыва */
+      position: relative;
+      width: 194px;
+      height: 32px;
+      margin-left: 52px;
+      margin-bottom: 10px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 24px;
+      font-weight: 400;
+      line-height: 32px;
+      letter-spacing: 0%;
+      text-align: left;
+      margin-right: 47px;
+    }
+
+    
+    /* Календарь */
+    .datepicker { 
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-shadow: 0px 2px 4px rgba(21, 4, 121, 0.2);
+      background-color: #fff;
+      padding: 10px;
+    }
+
+    .datepicker-header {
+      background-color: #f0f0f0;
+      padding: 10px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .datepicker-nav {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .datepicker-nav button {
+      border: none;
+      background-color: transparent;
+      padding: 5px;
+      cursor: pointer;
+    }
+
+    .datepicker-body {
+      padding: 10px;
+    }
+
+    .datepicker-table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    .datepicker-cell {
+      width: 14.28%;
+      height: 40px;
+      text-align: center;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .datepicker-cell:hover {
+      background-color: #f2f2f2;
+    }
+
+    .datepicker-cell-selected {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+    .datepicker-cell-disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+
+    #main-frame .line {   /* Линия */
+      position: absolute;
+      width: 1918px;
+      height: 0;
+      left: 0;
+      top: 1030.5px;
+      border: 1px solid rgb(179, 179, 179);
+      box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    }
+  
+    #myDatepicker {
+      font-size: 16px;
+      text-align: center;
+    }
+
+    #myDatepicker2 {
+      font-size: 16px;
+      text-align: center;
+    }
+
+    #myDatepicker3 {
+      font-size: 16px;
+      text-align: center;
+    }
+
+    .icon1 { /* Иконка пользователя */
+      transform: scale(0.5); 
+    }
+
+    #main-frame .frame2::before {
+      content: "Статистика";
+      position: absolute;
+      width: 478px;
+      height: 85px;
+      left: 50%;
+      top: 23px;
+      transform: translateX(-50%);
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 64px;
+      font-weight: 400;
+      line-height: 85px;
+      letter-spacing: 17px; /* Добавлено расстояние между буквами */
+      text-align: center; 
+    }
+
+    #main-frame .frame2 .select-date-text {   /* Выберите дату: от */
+      position: absolute;
+      width: 277px;
+      height: 43px;
+      left: 48px;
+      top: 253px;
+      color: rgb(0, 0, 0);
+      font-family: Playfair Display;
+      font-size: 32px;
+      font-weight: 400;
+      line-height: 43px;
+      letter-spacing: 0%;
+      text-align: left;
+    }
+
+    #main-frame .frame2 #result-container {   /* Результаты */
+      position: absolute;
+      width: 1077px;
+      top: 80%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: rgb(27, 8, 80);
+      font-family: Playfair Display;
+      font-size: 32px;
+      font-weight: bold;
+    }
+
+    .icon1 {   /* Иконка */
+      position: absolute;
+      width: 500px;
+      height: 450px;
+      left: 330px;
+      top: 140px;
+      background: url('img/icon1.png');
+      background-size: cover; 
+      background-repeat: no-repeat; 
+    }
+
+    @media (min-width: 769px) {
+    .menu-item {
+      display: none;
+    }
+  }
+
+    .menu-line {
+      display: none;
+    }
+
+    #main-frame .star1 {   /* Звездочка1 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 153px;
+      top: 200px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star2 {   /* Звездочка2 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 100px;
+      top: 620px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star3 {   /* Звездочка3 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 426px;
+      top: 789px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star4 {   /* Звездочка4 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 1640px;
+      top: 265px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star5 {   /* Звездочка5 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 1521px;
+      top: 572px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star6 {   /* Звездочка6 */
+      position: absolute;
+      width: 130px;
+      height: 130px;
+      left: 1706px;
+      top: 827px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star7 {   /* Звездочка7 */
+      position: absolute;
+      width: 203px;
+      height: 179px;
+      left: 174px;
+      right: 1543px;
+      top: 1069px;
+      bottom: 817px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star8 {   /* Звездочка8 */
+      position: absolute;
+      width: 204px;
+      height: 179px;
+      left: 127px;
+      top: 1192.81px;
+      transform: rotate(-0.23deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star9 {   /* Звездочка9 */
+      position: absolute;
+      width: 171px;
+      height: 170px;
+      left: 85px;
+      right: 1664px;
+      top: 1311px;
+      bottom: 584px;
+      transform: rotate(-0.23deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star10 {   /* Звездочка10 */
+      position: absolute;
+      width: 138px;
+      height: 124px;
+      left: 60px;
+      top: 1446px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star11 {   /* Звездочка11 */
+      position: absolute;
+      width: 171px;
+      height: 170px;
+      left: 85px;
+      top: 1534px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star12 {   /* Звездочка12 */
+      position: absolute;
+      width: 204px;
+      height: 178px;
+      left: 127px;
+      top: 1645px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star13 {   /* Звездочка13 */
+      position: absolute;
+      width: 203px;
+      height: 179px;
+      left: 174px;
+      top: 1767px;
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star14 {   /* Звездочка14 */
+      position: absolute;
+      width: 204px;
+      height: 179px;
+      left: 1525px;
+      top: 1069px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star15 {   /* Звездочка15 */
+      position: absolute;
+      width: 204px;
+      height: 179px;
+      left: 1575px;
+      top: 1192.81px;
+      transform: rotate(-179.77deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star16 {   /* Звездочка16 */
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      left: 1650px;
+      top: 1311px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star17 {   /* Звездочка17 */
+      position: absolute;
+      width: 137px;
+      height: 124px;
+      left: 1710px;
+      top: 1446px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star18 {   /* Звездочка18 */
+      position: absolute;
+      width: 170px;
+      height: 170px;
+      left: 1655px;
+      top: 1534px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star19 {   /* Звездочка19 */
+      position: absolute;
+      width: 204px;
+      height: 179px;
+      left: 1585px;
+      top: 1645px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+    #main-frame .star20 {   /* Звездочка20 */
+      position: absolute;
+      width: 204px;
+      height: 179px;
+      left: 1535px;
+      top: 1767px;
+      transform: rotate(180.00deg);
+      background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+      clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+    }
+
+
+
+
+
+/* Мобильный версия iPhone 14 Pro Max */
+@media only screen and (max-width: 768px) {
+      #main-frame {   /* Главный экран */
+        position: relative;
+        width: 456.5px;
+        height: 2050px;
+        background: linear-gradient(0.00deg, rgb(193, 188, 223) 0.374%,rgb(223, 223, 223) 99.625%);
+      }
+  
+      #main-frame .frame1 {   /* Фрейм с учетом рабочего времени */
+        position: absolute;
+        width: 320px;
+        height: 619px;
+        left: 68px;
+        top: 254px;
+        border-radius: 70px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: rgb(255, 255, 255);
+      }
+  
+      #main-frame .frame2 {   /* Фрейм с выбором даты */
+        position: absolute;
+        width: 320px;
+        height: 562px;
+        left: 68px;
+        top: 1075px;
+        border-radius: 70px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: rgb(255, 255, 255);
+        transition: width 0.5s ease-in-out;
+      }
+      
+      #main-frame .frame2.expanded { /* Класс для увеличения */
+        height: 900px;
+      }
+      #main-frame .frame2 .hidden {  /* Скрываем div с результатами по умолчанию */
+        display: none; 
+      }
+
+      #main-frame .menu {  /* Меню */
+        position: absolute;
+        width: 456.5px;
+        height: 54px;
+        left: 0;
+        top: 0;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1);
+        background: rgb(255, 255, 255);
+        display: flex; 
+        align-items: center;
+      }
+
+      .icon-menu {  /* Иконка в меню */
+        position: absolute;
+        background: url('img/icon_menu.png'); 
+        width: 24px; 
+        height: 24px; 
+        left: 30px;
+        margin-right: 100px;
+        background-size: 140px;
+        background-repeat: no-repeat;
+        background-size: cover; 
+        cursor: pointer;
+      }
+
+      .center-frame {   /* Фрейм с меню всплывающим */
+        position: absolute;
+        width: 200px; 
+        height: 300px; 
+        box-sizing: border-box;
+        border: 1px solid rgb(97, 97, 97);
+        border-radius: 20px;
+        background: rgb(255, 255, 255);
+        display: none;
+        top: 280px;
+        left: 125px;
+        z-index: 100;
+      }
+
+      .icon-menu::after {  /* Затемненный фон */
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 99;
+        display: none;
+      }
+
+      .center-frame.active {
+        display: block;
+      }
+
+      .icon-menu.active::after {
+        display: block;
+      }
+
+      .menu-item {   /* Данные с фрейма с всплывающим меню */
+        display: block;
+        color: rgb(79, 63, 175);
+        font-family: 'Playfair Display', serif;
+        font-size: 20px;
+        font-weight: 400;
+        line-height: 27px;
+        margin-top: 20px;
+        padding-left: 30px;
+      }
+
+      .center-frame.show {
+        display: block; /* Показываем фрейм при добавлении класса "show" */
+      }
+
+      .center-frame .menu-line {   /* Линия в меню */
+        display: block;
+        position: absolute;
+        width: 196px;
+        height: 0;
+        left: 0;
+        top: 101px;
+        border: 1px solid rgb(179, 179, 179);
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      }
+
+       .menu img {  /* Логотип */
+        position: absolute;
+        width: 167px;
+        height: 39px;
+        left: 200px;
+        right: 14px;
+        top: 5px;
+        bottom: -10px;
+        margin-left: 50px;
+      }
+
+      .icon1 {   /* Иконка */
+        position: absolute;
+        width: 500px;
+        height: 500px;
+        left: 70px;
+        top: -12px;
+        background: url('img/icon1.png');
+        background-size: 140px;
+        background-repeat: no-repeat;
+      }
+
+      .ellipse {   /* Круг */
+        position: absolute;
+        width: 100px;
+        height: 100px;
+        left: 230px;
+        right: 110px;
+        top: 150px;
+        bottom: 140px;
+        transform: translate(-50%, -50%); 
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(180.00deg, rgb(54, 39, 152), rgb(109, 94, 204) 20%, rgb(143, 130, 224) 43%, rgb(255, 255, 255) 100%);
+        border-radius: 50%; 
+      }
+
+      .name {   /* Пользователь */
+        position: absolute;
+        width: 28px;
+        height: 27px;
+        left: 215px;
+        right: 144px;
+        top: 202px;
+        bottom: 1372px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 48px;
+        letter-spacing: 0%;
+        text-align: left;
+      }
+   
+      #main-frame .frame1 .date-button {  /* Дата */
+        position: absolute;
+        width: 212px;
+        height: 46px;
+        left: 50px;
+        right: 203px;
+        top: 35px;
+        bottom: 547px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+        transition: background-color 200ms ease-in-out;
+      }
+
+      #main-frame .frame1 .date-button:hover { /* Стили при наведении кнопки Дата*/
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+        background-color: smart animate;
+      }
+
+      #main-frame .frame2 .date-button1 {  /* Дата 1 фрейм 2*/
+        position: absolute;
+        width: 212px;
+        height: 46px;
+        left: 50px;
+        right: 203px;
+        top: 190px;
+        bottom: 547px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+        transition: background-color 200ms ease-in-out;
+      }
+
+      #main-frame .frame2 .date-button1:hover { /* Стили при наведении кнопки Дата 1 фрейм 2*/
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+        background-color: smart animate;
+      }
+
+      #main-frame .frame2 .date-button2 {  /* Дата 2 фрейм 2*/
+        position: absolute;
+        width: 212px;
+        height: 46px;
+        left: 50px;
+        right: 203px;
+        top: 350px;
+        bottom: 547px;
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(270.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 47%);
+        transition: background-color 200ms ease-in-out;
+      }  
+
+      #main-frame .frame2 .date-button2:hover { /* Стили при наведении кнопки Дата 2 фрейм 2*/
+        border-radius: 15px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(90.00deg, rgb(143, 130, 224) 0%,rgb(226, 224, 240) 100%);
+        background-color: smart animate;
+      }
+
+      #main-frame .frame2::before {
+        content: "Статистика";
+        position: absolute;
+        width: 478px;
+        height: 85px;
+        left: 50%;
+        top: 13px;
+        transform: translateX(-50%);
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 43px;
+        font-weight: 400;
+        letter-spacing: 7px; 
+        text-align: center; 
+      }
+
+      #main-frame .frame2 .select-date-text {   /* Выберите дату: от */
+        position: absolute;
+        width: 277px;
+        height: 43px;
+        left: 61px;
+        top: 110px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 25px;
+        font-weight: 400;
+        line-height: 43px;
+        letter-spacing: 0%;
+        text-align: left;
+      }
+
+      #main-frame .frame2 .d {    /* до */
+        position: absolute;
+        width: 35px;
+        height: 43px;
+        left: 140px;
+        right: 363px;
+        top: 270px;
+        bottom: 334px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 25px;
+        font-weight: 400;
+        line-height: 43px;
+        letter-spacing: 0%;
+        text-align: center;
+      }
+
+      #main-frame .frame2 .save-2 {  /* Рассчитать1 */
+        position: absolute;
+        width: 218px;
+        height: 71px;
+        left: 50px;
+        right: 155px;
+        top: 450px;
+        bottom: 52px;
+        border-radius: 10px;
+        border: 1px solid #B3B3B3;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+
+      #main-frame .frame2 .save-2:hover { /* Стили при наведении кнопки Рассчитать*/
+        border-radius: 10px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(270.00deg, rgb(200, 194, 240) 100%);
+        background-color: #C8C2F0;
+      }
+
+      #main-frame .frame2 .save-2 .save1-2 {  /* Рассчитать2 */
+        position: absolute;
+        width: 218px;
+        height: 61px;
+        left: 0;
+        top: 0;
+      }
+
+      #main-frame .frame2 .save-2 .save1-2 .save-text-2 {  /* Рассчитать3 */
+        position: absolute;
+        width: 218px;
+        height: 61px;
+        left: 0%;
+        right: 0%;
+        top: 5px;
+        bottom: 0%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: rgb(54, 39, 152);
+        font-family: Playfair Display;
+        font-size: 32px;
+        font-weight: 400;
+        line-height: 53px;
+        letter-spacing: 0%;
+        text-align: center;
+        justify-content: center;
+      }
+
+      #main-frame .frame1 .time-input {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        margin-left: 23px;
+      }
+
+      #main-frame .frame1 .time-input label {
+        margin-right: 10px;
+        margin-top: 12px;
+      }
+
+      #main-frame .frame1 .time-input input {
+        width: 80px;
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+      #main-frame .frame1 .text1,
+      #main-frame .frame1 .text2,
+      #main-frame .frame1 .text3,
+      #main-frame .frame1 .text4 {
+        display: inline-block;
+        width: 150px;
+      }
+
+      #main-frame .frame1 .time-input {
+        display: inline-flex;
+        margin-left: 5;
+      }
+
+      #main-frame .frame1 .text1 {       /* Начало рабочего дня */
+        position: relative;
+        width: 242px;
+        height: 32px;
+        margin-left: 32px;
+        margin-bottom: 10px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 32px;
+        letter-spacing: 0%;
+        text-align: left;
+        margin-top: 120px;
+      }
+
+      #main-frame .frame1 .text2 {   /* Конец рабочего дня */
+        position: relative;
+        width: 231px;
+        height: 32px;
+        margin-left: 32px;
+        margin-bottom: 10px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 32px;
+        letter-spacing: 0%;
+        text-align: left;
+        margin-right: 11px;
+      }
+
+      #main-frame .frame1 .text3 {    /* Начало перерыва */
+        position: relative;
+        width: 250px;
+        height: 32px;
+        margin-left: 32px;
+        margin-bottom: 30px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 72px;
+        letter-spacing: 0%;
+        text-align: left;
+        margin-right: 37px;
+      }
+
+      #main-frame .frame1 .text4 {   /* Конец перерыва */
+        position: relative;
+        width: 194px;
+        height: 32px;
+        margin-left: 32px;
+        margin-bottom: 15px;
+        color: rgb(0, 0, 0);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: 400;
+        line-height: 42px;
+        letter-spacing: 0%;
+        text-align: left;
+        margin-right: 37px;
+      }
+
+      #main-frame .frame1 .save {  /* Сохранить1 */
+        position: absolute;
+        width: 218px;
+        height: 71px;
+        left: 50px;
+        right: 155px;
+        top: 521px;
+        bottom: 52px;
+        border-radius: 10px;
+        border: 1px solid #B3B3B3;
+        transition: background-color 0.3s ease;
+        cursor: pointer;
+      }
+
+      #main-frame .frame1 .save:hover { /* Стили при наведении кнопки Сохранить*/
+        border-radius: 10px;
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+        background: linear-gradient(270.00deg, rgb(200, 194, 240) 100%);
+        background-color: #C8C2F0;
+      }
+
+      #main-frame .frame1 .save .save1 {  /* Сохранить2 */
+        position: absolute;
+        width: 218px;
+        height: 71px;
+        left: 0;
+        top: 0;
+      }
+
+      #main-frame .frame1 .save .save1 .save-text {  /* Сохранить3 */
+        position: absolute;
+        width: 218px;
+        height: 71px;
+        left: 0%;
+        right: 0%;
+        top: 0%;
+        bottom: 0%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        color: rgb(54, 39, 152);
+        font-family: Playfair Display;
+        font-size: 32px;
+        font-weight: 400;
+        line-height: 53px;
+        letter-spacing: 0%;
+        text-align: center;
+        justify-content: center;
+      }
+
+      #main-frame .line {   /* Линия */
+        position: absolute;
+        width: 320px;
+        height: 0;
+        left: 68px;
+        top: 978px;
+        border: 1px solid rgb(179, 179, 179);
+        box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+      }
+
+      #main-frame .menu .exit {   /* Выйти */
+        display: none;
+      }
+
+  
+      #main-frame .menu .about {   /* О нас */
+        display: none;
+      }
+
+      #main-frame .menu .time {  /* Учёт времени */
+        display: none;
+      }
+
+      #main-frame .menu .contacts {  /* Контакты */
+        display: none;
+      }
+
+      #main-frame .frame2 #result-container {   /* Результаты */
+        position: absolute;
+        width: 200px;
+        top: 80%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        color: rgb(27, 8, 80);
+        font-family: Playfair Display;
+        font-size: 24px;
+        font-weight: bold;
+      }
+
+      #main-frame .star1m {   /* Звездочка1 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 345px;
+        right: 12px;
+        top: 358px;
+        bottom: 1292px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star2m {   /* Звездочка2 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 345px;
+        top: 505px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+         z-index: 1;
+      }
+
+      #main-frame .star3m {   /* Звездочка3 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 349px;
+        top: 652px;
+        transform: rotate(180.00deg);
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star4m {   /* Звездочка4 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 345px;
+        top: 1153px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star5m {   /* Звездочка5 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 345px;
+        top: 1300px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star6m {   /* Звездочка6 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 345px;
+        top: 1447px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star7m {   /* Звездочка7 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 26px;
+        top: 1153px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star8m {   /* Звездочка8 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 26px;
+        top: 1300px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+      #main-frame .star9m {   /* Звездочка9 моб.в */
+        position: absolute;
+        width: 80px;
+        height: 80px;
+        left: 26px;
+        top: 1447px;
+        background: linear-gradient(180.00deg, rgb(79, 63, 175) 44%,rgb(165, 138, 241) 100%);
+        clip-path: polygon(53% 0%, 60% 45%, 100% 50%, 60% 55%, 53% 100%, 45% 55%, 0% 50%, 45% 45%);
+        z-index: 1;
+      }
+
+}
+
+  </style>
+</head>
+<body>
+    <div id="main-frame">
+      <div class="line"></div>
+      <div class="star1"></div>
+      <div class="star2"></div>
+      <div class="star3"></div>
+      <div class="star4"></div>
+      <div class="star5"></div>
+      <div class="star6"></div>
+      <div class="star7"></div>
+      <div class="star8"></div>
+      <div class="star9"></div>
+      <div class="star10"></div>
+      <div class="star11"></div>
+      <div class="star12"></div>
+      <div class="star13"></div>
+      <div class="star14"></div>
+      <div class="star15"></div>
+      <div class="star16"></div>
+      <div class="star17"></div>
+      <div class="star18"></div>
+      <div class="star19"></div>
+      <div class="star20"></div>
+      <div class="star1m"></div>
+      <div class="star2m"></div>
+      <div class="star3m"></div>
+      <div class="star4m"></div>
+      <div class="star5m"></div>
+      <div class="star6m"></div>
+      <div class="star7m"></div>
+      <div class="star8m"></div>
+      <div class="star9m"></div>
+        <div class="menu">
+          <div class="exit">Выйти</div>
+          <div class="about">О нас</div>
+          <div class="time">Учёт времени</div>
+          <div class="contacts">Контакты</div>
+          <img src="logoza.ru.png" alt="logoza.ru">
+          <div class="ellipse"></div>
+          <div class="name">Вы</div>
+          <div class="name" style="left: 80px; top: 80px;"></div>
+          <div class="icon1"></div>
+          <div class="icon-menu"></div>
+          <div id="center-frame" class="center-frame">
+            <div class="menu-item" style="margin-top: 40px">Выйти</div>
+            <div class="menu-item" style="margin-top: 70px; ">О нас</div>
+            <div class="menu-item">Учёт времени</div>
+            <div class="menu-item">Контакты</div>
+            <div class="menu-line"></div>
+          </div>
+        </div>
+        <div class="frame1">
+          <input type="text" id="myDatepicker" class="date-button" placeholder="Выберите дату">
+          <div class="text1">Начало рабочего дня:</div>
+          <div class="time-input">
+            <label for="start-work"></label>
+            <input type="time" id="start-work" name="start-work">
+          </div>
+          <div class="text2">Конец рабочего дня:</div>
+          <div class="time-input">
+            <label for="end-work"></label>
+            <input type="time" id="end-work" name="end-work">
+          </div>
+          <div class="text3">Начало перерыва:</div>
+          <div class="time-input">
+            <label for="start-break"></label>
+            <input type="time" id="start-break" name="start-break">
+          </div>
+          <div class="text4">Конец перерыва:</div>
+          <div class="time-input">
+            <label for="end-break"></label>
+            <input type="time" id="end-break" name="end-break">
+          </div>        
+          <div class="save">
+            <div class="save1">
+              <div class="save-text">Сохранить</div>
+            </div>
+          </div>
+        </div>
+            <div class="frame2">
+              <div class="select-date-text">Выберите дату: от</div>
+              <input type="text" id="myDatepicker2" class="date-button1" placeholder="Выберите дату">
+              <div class="d">до</div>
+              <input type="text" id="myDatepicker3" class="date-button2" placeholder="Выберите дату">
+              <div class="save-2">
+                <div class="save1-2">
+                  <div class="save-text-2">Рассчитать</div>
+                </div>
+              </div>
+              <div id="result-container" class="hidden">
+                <p>Суммарное время работы: <span id="totalWorkTime"></span></p>
+                <p>Суммарное время перерывов: <span id="totalBreakTime"></span></p>
+                <p>Суммарное время работы без перерывов: <span id="totalWorkTimeWithoutBreaks"></span></p> 
+            </div>         
+            </div>
+    </div> 
+    <script>
+      let workdayData = {};
+
+// Функция для сохранения данных в localStorage
+function saveData() {
+  const selectedDate = document.getElementById("myDatepicker").value; // Получаем выбранную дату
+  const startWork = document.getElementById("start-work").value;
+  const endWork = document.getElementById("end-work").value;
+  const startBreak = document.getElementById("start-break").value;
+  const endBreak = document.getElementById("end-break").value;
+
+  // Сохраняем данные в объект workdayData
+  workdayData[selectedDate] = {
+    startWork: startWork,
+    endWork: endWork,
+    startBreak: startBreak,
+    endBreak: endBreak
+  };
+
+  // Сохраняем объект workdayData в localStorage
+  localStorage.setItem("workdayData", JSON.stringify(workdayData));
+
+  alert("Данные успешно сохранены!");
+}
+
+// Функция для загрузки данных из localStorage
+function loadData() {
+  const storedData = localStorage.getItem("workdayData");
+  if (storedData) {
+    workdayData = JSON.parse(storedData);
+  }
+}
+
+function calculateTime() {
+  loadData(); // Загружаем данные из localStorage
+
+  const startDate = document.getElementById("myDatepicker2").value;
+  const endDate = document.getElementById("myDatepicker3").value;
+  let totalWorkTimeWithoutBreaks = 0;
+
+  let totalWorkTimeHours = 0;
+  let totalWorkTimeMinutes = 0;
+  let totalBreakTimeHours = 0;
+  let totalBreakTimeMinutes = 0;
+
+  for (const date in workdayData) {
+    if (date >= startDate && date <= endDate) {
+      const workStartTime = new Date(`2000-01-01T${workdayData[date].startWork}`);
+      const workEndTime = new Date(`2000-01-01T${workdayData[date].endWork}`);
+      const breakStartTime = new Date(`2000-01-01T${workdayData[date].startBreak}`);
+      const breakEndTime = new Date(`2000-01-01T${workdayData[date].endBreak}`);
+
+      const workTime = workEndTime - workStartTime;
+      const breakTime = breakEndTime - breakStartTime;
+
+      const workTimeHours = Math.floor(workTime / (1000 * 60 * 60)); // Время работы в часах
+      const workTimeMinutes = Math.round((workTime % (1000 * 60 * 60)) / (1000 * 60)); // Время работы в минутах
+      const breakTimeHours = Math.floor(breakTime / (1000 * 60 * 60)); // Время перерыва в часах
+      const breakTimeMinutes = Math.round((breakTime % (1000 * 60 * 60)) / (1000 * 60)); // Время перерыва в минутах
+
+      totalWorkTimeHours += workTimeHours;
+      totalWorkTimeMinutes += workTimeMinutes;
+      totalBreakTimeHours += breakTimeHours;
+      totalBreakTimeMinutes += breakTimeMinutes;
+      totalWorkTimeWithoutBreaks += (workTime - breakTime) / (1000 * 60 * 60); // Время работы без перерывов в часах
+    }
+  }
+
+  // Дополнительные вычисления для правильного отображения времени в часах и минутах
+  totalWorkTimeHours += Math.floor(totalWorkTimeMinutes / 60);
+  totalWorkTimeMinutes %= 60;
+  totalBreakTimeHours += Math.floor(totalBreakTimeMinutes / 60);
+  totalBreakTimeMinutes %= 60;
+
+  // Вывод результатов расчета
+  document.getElementById("totalWorkTime").textContent = `${totalWorkTimeHours} ч ${totalWorkTimeMinutes} мин`;
+  document.getElementById("totalBreakTime").textContent = `${totalBreakTimeHours} ч ${totalBreakTimeMinutes} мин`;
+  document.getElementById("totalWorkTimeWithoutBreaks").textContent = `${Math.floor(totalWorkTimeWithoutBreaks)} ч ${Math.round((totalWorkTimeWithoutBreaks % 1) * 60)} мин`;
+  const frame2 = document.querySelector("#main-frame .frame2");
+  frame2.classList.add("expanded");
+  document.getElementById("result-container").classList.remove("hidden");
+}
+
+// Добавляем обработчики событий для кнопок
+document.querySelector(".frame1 .save").addEventListener("click", saveData);
+document.querySelector(".frame2 .save-2").addEventListener("click", calculateTime);
+      $(function() {
+    $('#myDatepicker').datepicker({
+      language: 'ru',
+      navTitles: {
+        days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+        months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+        years: ['Год']
+      },
+      firstDay: 1 // Начало недели с понедельника (по умолчанию 0 - воскресенье)
+    });
+  });
+
+  $(function() {
+    $('#myDatepicker2').datepicker({
+      language: 'ru',
+      navTitles: {
+        days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+        months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+        years: ['Год']
+      },
+      firstDay: 1 // Начало недели с понедельника (по умолчанию 0 - воскресенье)
+    });
+  });
+
+  $(function() {
+    $('#myDatepicker3').datepicker({
+      language: 'ru',
+      navTitles: {
+        days: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+        months: ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'],
+        years: ['Год']
+      },
+      firstDay: 1 // Начало недели с понедельника (по умолчанию 0 - воскресенье)
+    });
+  });
+
+    const iconMenu = document.querySelector('.icon-menu');
+    const centerFrame = document.getElementById('center-frame');
+
+    iconMenu.addEventListener('click', function() {
+      centerFrame.classList.toggle('show');
+   });
+
+    document.querySelector('.icon-menu').addEventListener('click', function() {
+      document.querySelector('.icon-menu').classList.toggle('active');
+      document.querySelector('.center-frame').classList.toggle('active');
+    });
+
+
+    </script>   
+</body>
+</html>
